@@ -123,7 +123,7 @@ class Admin {
 	 * Enqueue Styles and Scripts for Admin page.
 	 */
 	public function enqueue_styles_and_scripts( $hook ) {
-		if ( 'toplevel_page_trackly' !== $hook ) {
+		if ( 'toplevel_page_' . $this->plugin_name !== $hook ) {
 			return;
 		}
 
