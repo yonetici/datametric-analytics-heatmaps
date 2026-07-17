@@ -144,4 +144,21 @@ class EventRepository {
 
 		delete_option( 'trackly_cleanup_lock' );
 	}
+
+	/**
+	 * Run upgrade database migrations on version changes.
+	 */
+	public function upgrade( string $from_version ): void {
+		// Execute schema upgrades if the user was running an older version
+		if ( version_compare( $from_version, '1.0.0', '<' ) ) {
+			$index_check = $this->wpdb->get_results( "SHOW INDEX FROM {$this->table_name} WHERE Key_name = 'page_url_created'" );
+			if ( empty( $index_check ) ) {
+				$this->wpdb->query( "ALTER TABLE {$this->table_name} ADD INDEX page_url_created (page_url(191), created_at)" );
+			}
+			$created_at_check = $this->wpdb->get_results( "SHOW INDEX FROM {$this->table_name} WHERE Key_name = 'created_at'" );
+			if ( empty( $created_at_check ) ) {
+				$this->wpdb->query( "ALTER TABLE {$this->table_name} ADD INDEX created_at (created_at)" );
+			}
+		}
+	}
 }

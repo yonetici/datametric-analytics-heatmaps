@@ -13,12 +13,27 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Database {
 
 	/**
+	 * Cached instance of EventRepository (Step 4: Singleton Pattern)
+	 */
+	private static ?\Trackly\Includes\Repository\EventRepository $repository = null;
+
+	/**
+	 * Set a custom repository instance for mocking and dependency injection (Step 2: Testability / DI)
+	 */
+	public static function set_repository( \Trackly\Includes\Repository\EventRepository $repository ): void {
+		self::$repository = $repository;
+	}
+
+	/**
 	 * Get an instance of EventRepository.
 	 */
 	private static function get_repository(): \Trackly\Includes\Repository\EventRepository {
-		global $wpdb;
-		$table_name = $wpdb->prefix . 'trackly_clicks';
-		return new \Trackly\Includes\Repository\EventRepository( $wpdb, $table_name );
+		if ( self::$repository === null ) {
+			global $wpdb;
+			$table_name = $wpdb->prefix . 'trackly_clicks';
+			self::$repository = new \Trackly\Includes\Repository\EventRepository( $wpdb, $table_name );
+		}
+		return self::$repository;
 	}
 
 	/**
@@ -38,24 +53,42 @@ class Database {
 	}
 
 	/**
-	 * Create Custom Tables.
+	 * Create Custom Tables and execute version migration upgrades.
 	 */
 	public static function create_tables(): void {
-		self::get_repository()->create_tables();
+		$repo = self::get_repository();
+		$repo->create_tables();
+
+		// Database upgrade manager (Step 5: DB Versioning)
+		$current_version = get_option( 'trackly_db_version', '0.0.0' );
+		if ( version_compare( $current_version, TRACKLY_VERSION, '<' ) ) {
+			$repo->upgrade( $current_version );
+			update_option( 'trackly_db_version', TRACKLY_VERSION );
+		}
 	}
 
 	/**
-	 * Log Clicks.
+	 * Log Clicks with exception wrapper logs.
 	 */
 	public static function log_click( array $data ): bool {
-		return self::get_repository()->log_click( $data );
+		try {
+			return self::get_repository()->log_click( $data );
+		} catch ( \Exception $e ) {
+			error_log( '[Trackly] Click logging failure: ' . $e->getMessage() );
+			return false;
+		}
 	}
 
 	/**
-	 * Retrieve Clicks.
+	 * Retrieve Clicks with exception wrapper logs.
 	 */
 	public static function get_clicks_for_page( string $page_url ): array {
-		return self::get_repository()->get_clicks_for_page( $page_url );
+		try {
+			return self::get_repository()->get_clicks_for_page( $page_url );
+		} catch ( \Exception $e ) {
+			error_log( '[Trackly] Click retrieval failure: ' . $e->getMessage() );
+			return array();
+		}
 	}
 
 	/**
@@ -71,23 +104,21 @@ class Database {
 	}
 
 	/**
-	 * Unschedule cleanup and IP refresh cron jobs.
+	 * Unschedule cleanup and IP refresh cron jobs securely (Step 3: Unschedule duplicates).
 	 */
 	public static function unschedule_cleanup(): void {
-		$timestamp = wp_next_scheduled( 'trackly_daily_cleanup' );
-		if ( $timestamp ) {
-			wp_unschedule_event( $timestamp, 'trackly_daily_cleanup' );
-		}
-		$weekly_timestamp = wp_next_scheduled( 'trackly_weekly_ip_refresh' );
-		if ( $weekly_timestamp ) {
-			wp_unschedule_event( $weekly_timestamp, 'trackly_weekly_ip_refresh' );
-		}
+		wp_clear_scheduled_hook( 'trackly_daily_cleanup' );
+		wp_clear_scheduled_hook( 'trackly_weekly_ip_refresh' );
 	}
 
 	/**
 	 * Clean up click data older than 30 days.
 	 */
 	public static function daily_cleanup(): void {
-		self::get_repository()->daily_cleanup();
+		try {
+			self::get_repository()->daily_cleanup();
+		} catch ( \Exception $e ) {
+			error_log( '[Trackly] Daily cleanup failure: ' . $e->getMessage() );
+		}
 	}
 }

@@ -38,6 +38,9 @@ spl_autoload_register( function ( $class ) {
 } );
 
 function activate_trackly() {
+	// Dynamically register the weekly interval filter so wp_schedule_event can recognize it on activation (Step 1: Cron registration order)
+	add_filter( 'cron_schedules', array( 'Trackly\Includes\ProxyRegistry', 'add_cron_intervals' ) );
+
 	// Trigger DB table creation
 	Trackly\Includes\Database::create_tables();
 	Trackly\Includes\Database::schedule_cleanup();
