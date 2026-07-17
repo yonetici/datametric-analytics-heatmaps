@@ -1,7 +1,6 @@
 <?php
 /**
  * Plugin Name:       MetricPulse
- * Plugin URI:        https://trackly.io
  * Description:       A modern, stunning Google Analytics 4 dashboard and page-level statistics client for WordPress with Heatmaps and AI Insights.
  * Version:           1.0.0
  * Author:            Trackly Team
