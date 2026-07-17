@@ -34,6 +34,10 @@ In compliance with WordPress.org Guidelines, please note that MetricPulse connec
    - **Purpose**: Dynamically fetches and validates Cloudflare's public IPv4/IPv6 ranges once a week via cron to ensure secure client IP detection and prevent request spoofing.
    - **Privacy Policy**: Cloudflare Privacy Policy can be found at https://www.cloudflare.com/privacypolicy
 
+= Bundled Third-Party Libraries =
+
+* **ApexCharts.js** (v3.41.0, MIT License) — used to render the admin dashboard charts. Source and documentation: https://github.com/apexcharts/apexcharts.js . The library is bundled locally (Admin/js/vendor/apexcharts.min.js); no chart data leaves your server through it.
+
 == Installation ==
 
 1. Upload the plugin files to the `/wp-content/plugins/metricpulse` directory, or install the plugin through the WordPress plugins screen directly.
