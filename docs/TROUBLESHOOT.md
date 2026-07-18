@@ -32,5 +32,5 @@ If the connection indicator displays "Not Connected" even after saving settings:
 ## 🟢 Empty Heatmap or Click Records Not Displaying
 
 1. **Wait for Traffic**: Ensure visitors have clicked on the page. Inactive or draft pages have zero database click records.
-2. **Sampling Rate**: If `metricpulse_sampling_rate` is set low (e.g., `10%` or `25%`), only a random fraction of visitor sessions record clicks. Raise it to `100%` during staging testing.
+2. **Sampling Rate**: If `datametric_sampling_rate` is set low (e.g., `10%` or `25%`), only a random fraction of visitor sessions record clicks. Raise it to `100%` during staging testing.
 3. **CORS/Origin Blocks**: Check your browser console for failed REST API requests. If your server strips both `Origin` and `Referer` headers, or you serve cross-origin requests, check your security proxy filters.

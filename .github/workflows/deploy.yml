@@ -25,6 +25,6 @@ jobs:
         env:
           SVN_USERNAME: ${{ secrets.WPORG_SVN_USERNAME }}
           SVN_PASSWORD: ${{ secrets.WPORG_SVN_PASSWORD }}
-          SLUG: metricpulse
+          SLUG: datametric-analytics-heatmaps
           ASSETS_DIR: assets
-          BUILD_DIR: metricpulse
+          BUILD_DIR: datametric-analytics-heatmaps

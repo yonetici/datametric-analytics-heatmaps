@@ -1,0 +1,10 @@
+{
+  "name": "datametric-analytics-heatmaps",
+  "version": "1.0.0",
+  "description": "WordPress plugin frontend and admin asset management.",
+  "scripts": {
+    "build": "python3 ../bin/minify.py"
+  },
+  "devDependencies": {},
+  "dependencies": {}
+}

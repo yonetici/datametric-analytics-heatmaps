@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="assets/banner-772x250.png" alt="MetricPulse — GA4 analytics, heatmaps & insights for WordPress" width="100%">
+  <img src="assets/banner-772x250.png" alt="DataMetric — GA4 analytics, heatmaps & insights for WordPress" width="100%">
 </p>
 
-<h1 align="center">MetricPulse 📊</h1>
+<h1 align="center">DataMetric 📊</h1>
 
 <p align="center">
   A modern, GDPR-conscious <strong>Google Analytics 4 (GA4)</strong> dashboard, local click heatmap tracker,
@@ -17,14 +17,14 @@
 </p>
 
 <p align="center">
-  📣 <strong><a href="https://www.ridvanbilgin.com/2026/07/metricpulse-wordpress-ga4-analytics-plugin.html">Read the introduction post →</a></strong>
+  📣 <strong><a href="https://www.ridvanbilgin.com/2026/07/datametric-wordpress-ga4-analytics-plugin.html">Read the introduction post →</a></strong>
 </p>
 
 ---
 
 ## ✨ Overview
 
-**MetricPulse** brings the analytics that matter into your WordPress admin, without sacrificing performance or privacy. Standard visitors download only a **~4&nbsp;KB, dependency-free (vanilla JS) tracker**; the heavy dashboard interface is loaded exclusively for logged-in administrators. All GA4 requests are batched, cached, and quota-aware.
+**DataMetric** brings the analytics that matter into your WordPress admin, without sacrificing performance or privacy. Standard visitors download only a **~4&nbsp;KB, dependency-free (vanilla JS) tracker**; the heavy dashboard interface is loaded exclusively for logged-in administrators. All GA4 requests are batched, cached, and quota-aware.
 
 > **Note:** GA4 anomaly insights are produced by classic **mean + standard deviation** statistics — not machine learning. Honest math, clearly labeled.
 
@@ -55,26 +55,26 @@
 
 ## 📦 Installation
 
-1. Download the latest plugin ZIP (build it with `python3 bin/minify.py` then zip the `metricpulse/` folder, or grab it from the [Releases](https://github.com/yonetici/metricpulse/releases) page).
+1. Download the latest plugin ZIP (build it with `python3 bin/minify.py` then zip the `datametric-analytics-heatmaps/` folder, or grab it from the [Releases](https://github.com/yonetici/metricpulse/releases) page).
 2. In WordPress, go to **Plugins → Add New → Upload Plugin**, choose the ZIP, and activate.
-3. Open **MetricPulse** in the admin menu. It starts in **Demo Mode** so you can explore immediately.
+3. Open **DataMetric** in the admin menu. It starts in **Demo Mode** so you can explore immediately.
 4. To connect real data, follow the [Installation & GA4 setup guide](docs/INSTALL.md).
 
 ## ⚙️ Configuration
 
-MetricPulse authenticates to the GA4 Data API with a **Service Account** (RS256-signed JWT). Provide credentials via any of:
+DataMetric authenticates to the GA4 Data API with a **Service Account** (RS256-signed JWT). Provide credentials via any of:
 
 - The **Settings** screen (JSON is encrypted at rest with AES-256-GCM), or
 - The `METRICPULSE_GA_JSON` constant / environment variable, or
-- A secrets file at `/etc/secrets/metricpulse.json`.
+- A secrets file at `/etc/secrets/datametric.json`.
 
 Step-by-step instructions: **[docs/INSTALL.md](docs/INSTALL.md)**.
 
 ## 🧩 Repository Structure
 
 ```
-metricpulse/                 # The WordPress plugin (this is what ships)
-├── metricpulse.php          # Plugin bootstrap: constants, PSR-4 autoloader, activation
+datametric-analytics-heatmaps/   # The WordPress plugin (this is what ships)
+├── datametric-analytics-heatmaps.php # Plugin bootstrap: constants, PSR-4 autoloader, activation
 ├── uninstall.php            # Multisite-aware, opt-in data cleanup
 ├── Includes/                # Core, Database, GA4 API client, Repository, Services, Migration
 ├── Admin/                   # Admin dashboard, REST endpoints, ApexCharts scripts & styles
@@ -92,7 +92,7 @@ docs/                        # INSTALL, HOOKS, TROUBLESHOOT guides
 
 ```bash
 # Install dev dependencies (PHPUnit)
-cd metricpulse && composer install
+cd datametric-analytics-heatmaps && composer install
 
 # Run the test suite
 vendor/bin/phpunit
@@ -101,7 +101,7 @@ vendor/bin/phpunit
 python3 bin/minify.py
 ```
 
-- **Architecture:** PSR-4 autoloaded (`MetricPulse\` namespace), with a layered service/repository design and facade classes (`Api`, `Database`).
+- **Architecture:** PSR-4 autoloaded (`DataMetric\` namespace), with a layered service/repository design and facade classes (`Api`, `Database`).
 - **Charts:** [ApexCharts](https://github.com/apexcharts/apexcharts.js) is bundled locally (no remote CDN).
 - **CI:** GitHub Actions runs PHP lint + PHPUnit on every push/PR (see [`.github/workflows/lint.yml`](.github/workflows/lint.yml)).
 
@@ -113,14 +113,14 @@ python3 bin/minify.py
 
 ## 🔒 Privacy
 
-Click telemetry contains **no IP address or personal identifiers** — only the page path, clicked element, and normalized coordinates — and is stored locally in your own database, then automatically deleted after 30 days. See the plugin's [readme.txt](metricpulse/readme.txt) for the full privacy statement and the list of external services (GA4 Data API, Cloudflare IP ranges).
+Click telemetry contains **no IP address or personal identifiers** — only the page path, clicked element, and normalized coordinates — and is stored locally in your own database, then automatically deleted after 30 days. See the plugin's [readme.txt](datametric-analytics-heatmaps/readme.txt) for the full privacy statement and the list of external services (GA4 Data API).
 
 ## 🤝 Contributing
 
 Contributions are welcome! Please:
 
 1. Follow **WordPress Coding Standards (WPCS)** for all PHP.
-2. Wrap user-facing strings in i18n functions (`__()`, `esc_html__()`, …) using the `metricpulse` text domain.
+2. Wrap user-facing strings in i18n functions (`__()`, `esc_html__()`, …) using the `datametric-analytics-heatmaps` text domain.
 3. Never commit unencrypted credentials, and always use `$wpdb->prepare()` for dynamic queries.
 4. Add/adjust PHPUnit tests for behavioral changes and run the suite before opening a PR.
 

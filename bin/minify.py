@@ -50,12 +50,13 @@ def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
     workspace_root = os.path.dirname(script_dir)
 
+    plugin_dir = "datametric-analytics-heatmaps"
     targets = [
-        os.path.join(workspace_root, "metricpulse/Admin/css/trackly-admin.css"),
-        os.path.join(workspace_root, "metricpulse/Admin/js/trackly-admin.js"),
-        os.path.join(workspace_root, "metricpulse/Public/css/trackly-public.css"),
-        os.path.join(workspace_root, "metricpulse/Public/js/trackly-public.js"),
-        os.path.join(workspace_root, "metricpulse/Public/js/trackly-tracker.js")
+        os.path.join(workspace_root, plugin_dir, "Admin/css/trackly-admin.css"),
+        os.path.join(workspace_root, plugin_dir, "Admin/js/trackly-admin.js"),
+        os.path.join(workspace_root, plugin_dir, "Public/css/trackly-public.css"),
+        os.path.join(workspace_root, plugin_dir, "Public/js/trackly-public.js"),
+        os.path.join(workspace_root, plugin_dir, "Public/js/trackly-tracker.js")
     ]
     
     for target in targets:
