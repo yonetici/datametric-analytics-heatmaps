@@ -598,7 +598,11 @@ class Admin {
 		register_rest_route( 'datametric/v1', '/record-click', array(
 			'methods'             => 'POST',
 			'callback'            => array( $this, 'record_click_callback' ),
-			'permission_callback' => array( $this, 'check_public_click_permissions' ),
+			// Intentionally public: anonymous visitors submit click telemetry, and a nonce cannot be
+			// used here because it is baked into full-page caches and silently expires there. This is a
+			// low-sensitivity, write-only endpoint. Abuse is mitigated inside the callback (bot filter,
+			// same-origin heuristic, per-IP rate limiting) as best-effort hardening — not authentication.
+			'permission_callback' => '__return_true',
 		) );
 
 		register_rest_route( 'datametric/v1', '/clicks', array(
@@ -610,34 +614,44 @@ class Admin {
 		register_rest_route( 'datametric/v1', '/save-event', array(
 			'methods'             => 'POST',
 			'callback'            => array( $this, 'save_event_callback' ),
-			'permission_callback' => array( $this, 'check_admin_permissions' ),
+			// Writes a site-wide option (custom GA4 event map), so require full admin capability.
+			'permission_callback' => array( $this, 'check_manage_permissions' ),
 		) );
 	}
 
 	/**
-	 * Verify if current user has permission to view reports.
+	 * Verify if current user has permission to VIEW reports (read-only endpoints).
 	 */
 	public function check_admin_permissions() {
 		return current_user_can( 'datametric_view_dashboard' ) || current_user_can( 'manage_options' );
 	}
 
 	/**
-	 * Authorize anonymous click telemetry submissions.
-	 *
-	 * Note on nonces: for logged-out visitors wp_create_nonce() yields the same value for
-	 * everyone in a 12-24h window, so it provides no real CSRF protection AND is baked into
-	 * full-page caches where it silently expires, killing all telemetry. We therefore protect
-	 * this low-sensitivity, write-only endpoint with strict same-origin enforcement, a bot
-	 * filter, and per-IP rate limiting (applied in the callback) instead of a nonce.
+	 * Verify if current user may CHANGE site-wide plugin settings (write endpoints).
 	 */
-	public function check_public_click_permissions( $request ) {
-		// 1. Block common web crawlers and scrapers via User-Agent to prevent database spam
+	public function check_manage_permissions() {
+		return current_user_can( 'manage_options' );
+	}
+
+	/**
+	 * Best-effort abuse mitigation for the intentionally public /record-click endpoint.
+	 *
+	 * This is NOT authentication — the endpoint is public by design (anonymous visitors submit
+	 * click telemetry, and a nonce cannot be used because it is baked into full-page caches and
+	 * expires there). These heuristics (bot filter + same-origin) only reduce casual spam; the
+	 * per-IP rate limiter in record_click_callback() provides the volume cap. Signals here are
+	 * spoofable and are treated purely as hardening, never as a trust boundary.
+	 *
+	 * @return bool True if the request looks like a genuine same-origin visitor.
+	 */
+	private function is_probable_visitor_request() {
+		// 1. Skip common web crawlers and scrapers via User-Agent to reduce database spam.
 		$user_agent = isset( $_SERVER['HTTP_USER_AGENT'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ) : '';
 		if ( '' === $user_agent || preg_match( '/bot|crawl|spider|slurp|Baiduspider|YandexBot|DuckDuckBot|facebookexternalhit|LinkedInBot|Lighthouse|HeadlessChrome|python-requests|curl|wget/i', $user_agent ) ) {
 			return false;
 		}
 
-		// 2. Require a same-origin Origin or Referer header. Reject if BOTH are absent
+		// 2. Prefer a same-origin Origin or Referer header. Reject if BOTH are absent
 		//    (header-less scripted requests) or if either is present and mismatched.
 		$origin  = isset( $_SERVER['HTTP_ORIGIN'] ) ? esc_url_raw( wp_unslash( $_SERVER['HTTP_ORIGIN'] ) ) : '';
 		$referer = isset( $_SERVER['HTTP_REFERER'] ) ? esc_url_raw( wp_unslash( $_SERVER['HTTP_REFERER'] ) ) : '';
@@ -929,6 +943,11 @@ class Admin {
 	 * REST Callback to record a visitor click.
 	 */
 	public function record_click_callback( $request ) {
+		// Best-effort abuse mitigation for this public, write-only telemetry endpoint (not auth).
+		if ( ! $this->is_probable_visitor_request() ) {
+			return new WP_REST_Response( array( 'success' => false, 'error' => __( 'Forbidden.', 'datametric-analytics-heatmaps' ) ), 403 );
+		}
+
 		// Fixed 60s window rate limit per IP, counting REQUESTS (each request may carry a batch of clicks).
 		$ip = $this->get_ip_address();
 		$transient_key = 'datametric_rate_' . md5( $ip );

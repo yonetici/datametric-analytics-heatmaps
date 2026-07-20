@@ -73,7 +73,7 @@ class Tracker {
 		// 1. Zero-Footprint vanilla tracking engine loaded dynamically for all visitors (Minified)
 		wp_enqueue_script( $this->plugin_name . '-tracker-js', DATAMETRIC_URL . 'Public/js/trackly-tracker.min.js', array(), $this->asset_version( 'Public/js/trackly-tracker.min.js' ), true );
 		// No nonce: the /record-click endpoint authorizes anonymous writes by same-origin + rate limit,
-		// which (unlike a cached nonce) survives full-page caching. See Admin::check_public_click_permissions().
+		// which (unlike a cached nonce) survives full-page caching. See Admin::is_probable_visitor_request().
 		// Custom GA4 event bindings (bound client-side by the enqueued tracker script via gtag).
 		$custom_events = get_option( 'datametric_custom_events', array() );
 		$tracker_data = array(
