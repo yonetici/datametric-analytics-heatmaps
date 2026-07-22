@@ -15,11 +15,22 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      # Single source of truth for the SVN tag: the "Stable tag" line in readme.txt.
+      # This keeps the SVN tag (e.g. 1.0.0) in sync with what WordPress.org treats as stable,
+      # regardless of how the workflow was triggered (release or manual dispatch).
+      - name: Resolve version from readme.txt
+        id: ver
+        run: |
+          VERSION="$(grep -m1 '^Stable tag:' datametric-analytics-heatmaps/readme.txt | sed 's/^Stable tag:[[:space:]]*//' | tr -d '[:space:]')"
+          echo "Resolved version: $VERSION"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
       - name: WordPress.org Plugin Deploy
         uses: 10up/action-wordpress-plugin-deploy@stable
         env:
           SVN_USERNAME: ${{ secrets.WPORG_SVN_USERNAME }}
           SVN_PASSWORD: ${{ secrets.WPORG_SVN_PASSWORD }}
           SLUG: datametric-analytics-heatmaps
+          VERSION: ${{ steps.ver.outputs.version }}
           ASSETS_DIR: assets
           BUILD_DIR: datametric-analytics-heatmaps
